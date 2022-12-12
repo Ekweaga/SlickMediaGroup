@@ -14,21 +14,35 @@ export default function Home() {
   const [querydata,setQueryData] = useState(false);
   const [loading,setLoading] = useState(false)
   const [data, setData] = useState([])
+  const [error,setError] = useState(null)
 
   const search = `https://api.themoviedb.org/3/search/movie?api_key=${apikey}&language=en-US&query=${query}&page=1&include_adult=true`
 
-  const searchQuery = ()=>{
+  const searchQuery = async ()=>{
     if(query === "" || query === null){
       setQueryData(false)
     }
 if(query.length > 1){
   setQueryData(true)
+
   setLoading(true)
-  axios.get(search).then((response)=>{
-    setLoading(false)
-    setData(response.data.results)
-    console.log(response.data.results)
-  })
+  try{
+    
+    await axios.get(search).then((response)=>{
+      setLoading(false)
+      setData(response.data.results)
+    
+    })
+  }
+  catch(err){
+    if (err.message === "Network Error"){
+      setError("Check Connections")
+    }
+    else{
+      setError('')
+    }
+  }
+ 
 }
 
 
@@ -51,7 +65,7 @@ if(query.length > 1){
       <input type="text" placeholder="Search" className='border-[1px] border-[#BFBFBF] px-2 h-[40px] focus:outline-none ' value={query} onChange={(e)=>setQuery(e.target.value)} onKeyUp={searchQuery}/>
     </div>
 
-    {querydata?<Search loading={loading} data={data}/>:
+    {querydata?<Search loading={loading} data={data} error={error}/>:
       <Main/>}
 
     </>
